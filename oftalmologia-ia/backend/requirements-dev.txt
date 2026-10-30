@@ -1,0 +1,3 @@
+# Solo pruebas (se instalan en la imagen para poder correr `./run.sh test` sin nada local).
+pytest>=8.0,<10.0
+httpx>=0.27,<1.0

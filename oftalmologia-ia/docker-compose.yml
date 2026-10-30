@@ -1,0 +1,54 @@
+# Ecosistema completo: PostgreSQL + API (FastAPI + Whisper) + Web (React servido por nginx).
+# Arranque: ./run.sh   (o: docker compose up --build)
+name: oftalmologia-ia
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-oftalmologia}
+      POSTGRES_USER: ${POSTGRES_USER:-oftalmologia}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-oftalmologia_local}
+    volumes:
+      - datos_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      args:
+        WHISPER_MODEL: ${WHISPER_MODEL:-small}
+        PRECARGAR_WHISPER: ${PRECARGAR_WHISPER:-true}
+    env_file: .env
+    environment:
+      # La API siempre habla con el contenedor "db"; se arma aquí para que no dependa de editar .env.
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-oftalmologia}:${POSTGRES_PASSWORD:-oftalmologia_local}@db:5432/${POSTGRES_DB:-oftalmologia}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${PUERTO_API:-8000}:8000"   # http://localhost:8000/docs (Swagger)
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/salud', timeout=3)"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${PUERTO_WEB:-8080}:80"     # http://localhost:8080
+    restart: unless-stopped
+
+volumes:
+  datos_pg:

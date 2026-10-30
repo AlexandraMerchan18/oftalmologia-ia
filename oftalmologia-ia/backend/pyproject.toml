@@ -1,0 +1,7 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
+markers = [
+    "integracion: pruebas que levantan la API completa con BD en memoria y proveedores simulados",
+]
