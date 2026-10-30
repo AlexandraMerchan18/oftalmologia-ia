@@ -250,7 +250,7 @@ Antes de entregar, otra persona descarga el ZIP en una máquina distinta y sigue
 
 | Fecha | Quién | Sistema operativo | Tiempo hasta ver la app | Problemas encontrados | Corrección aplicada |
 |---|---|---|---|---|---|
-| _completar_ | | | | | |
+| 29/10/2026 | Jose Pantoja | Linux | 5 minutos | Faltaba la llave de API en el archivo `.env` | Configurar la API Key en el archivo `.env` |
 
 ## 13. Seguridad
 
